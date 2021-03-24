@@ -28,4 +28,4 @@ print(f'Цена Павла Дурова: {api.user_get(1).price} р.')
 ```
 
 # Документация
-https://phinnik.github.io/slaves_api/
+https://phinnik.github.io/slaves_api/index.html
