@@ -1,0 +1,2 @@
+class SlaveIsLocked(Exception):
+    pass
