@@ -1,0 +1,10 @@
+site_name: Slaves api
+nav:
+  - Быстрый старт: index.md
+  - Методы API: methods.md
+  - Объекты API: objects.md
+  - Возвращаемые ошибки: exceptions.md
+  - Contribution: contribution.md
+
+theme:
+  name: material

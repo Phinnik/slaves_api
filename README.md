@@ -3,6 +3,11 @@ ___
 
 Библиотека для игры [Рабы](https://vk.com/app7794757_434463725#/) на Python.
 
+# Большая просьба
+
+Поставьте звездочку на репозиторий. Это много для меня значит.
+
+
 # Порядок установки
 ```shell script
 git clone https://github.com/Phinnik/slaves_api.git
@@ -23,4 +28,4 @@ print(f'Цена Павла Дурова: {api.user_get(1).price} р.')
 ```
 
 # Документация
-В процессе написания
+https://phinnik.github.io/slaves_api/
