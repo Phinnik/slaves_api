@@ -9,6 +9,7 @@ git clone https://github.com/Phinnik/slaves_api.git
 pip install virtualenv
 virtualenv venv
 venv\Scripts\activate.bat
+cd slaves_api
 pip install -r requirements.txt
 ```
 
