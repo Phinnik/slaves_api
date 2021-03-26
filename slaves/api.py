@@ -15,6 +15,17 @@ class Api:
         payload = payload or dict()
         headers = {
             "authorization": self._authorization,
+            'authority': 'pixel.w84.vkforms.ru',
+            'sec-ch-ua': '"Google Chrome";v="89", "Chromium";v="89", ";Not A Brand";v="99"',
+            'accept': 'application/json, text/plain, */*',
+            'sec-ch-ua-mobile': '?0',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36',
+            'origin': 'https://prod-app7794757-29d7bd3253fe.pages-ac.vk-apps.com',
+            'sec-fetch-site': 'cross-site',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-dest': 'empty',
+            'referer': 'https://prod-app7794757-29d7bd3253fe.pages-ac.vk-apps.com/',
+            'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7'
         }
         if method == 'post':
             response = requests.post(url, headers=headers, json=payload)
