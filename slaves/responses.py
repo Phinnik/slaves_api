@@ -28,6 +28,10 @@ class BuySlaveResponse(dtypes.User):
     pass
 
 
+class SaleSlaveResponse(dtypes.User):
+    pass
+
+
 class BuyFetterResponse(dtypes.User):
     pass
 
