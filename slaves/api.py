@@ -86,7 +86,7 @@ class Api:
         payload = {'slave_id': user_id}
         return self._call(method, api_method, response_type, payload)
 
-    def sale_slave(self, user_id) -> responses.BuySlaveResponse:
+    def sale_slave(self, user_id) -> responses.SaleSlaveResponse:
         """
         Продает раба
 
