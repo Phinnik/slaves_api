@@ -86,6 +86,18 @@ class Api:
         payload = {'slave_id': user_id}
         return self._call(method, api_method, response_type, payload)
 
+    def sale_slave(self, user_id) -> responses.BuySlaveResponse:
+        """
+        Продает раба
+
+        :param user_id: идентификатор пользователя
+        """
+        method = 'post'
+        api_method = 'saleSlave'
+        response_type = responses.BuySlaveResponse
+        payload = {'slave_id': user_id}
+        return self._call(method, api_method, response_type, payload)
+
     def buy_fetter(self, slave_id: int) -> responses.BuyFetterResponse:
         """
         Покупает оковы для раба
