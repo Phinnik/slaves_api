@@ -1,49 +1,55 @@
 from typing import List, Any
 from pydantic import BaseModel, Field
-from slaves import dtypes
+
+from slaves.dtypes import User
 
 
-class StartResponse(BaseModel):
-    me: dtypes.User = Field(...)
+class ResponseBase(BaseModel):
+    ...
+
+
+class ResponseUser(ResponseBase, User):
+    ...
+
+
+class ResponseStart(ResponseBase):
+    me: User = Field(...)
     share_url: str = Field(...)
     duels: List[Any] = Field(None)
-    slaves: List[dtypes.User] = Field(None)
+    slaves: List[User] = Field(None)
     slaves_profit_per_min: int = Field(None)
     just_slave: bool = Field(None)
 
 
-class UserGetResponse(dtypes.User):
-    pass
+class ResponseUsers(ResponseBase):
+    users: List[User]
 
 
-class UsersGetResponse(BaseModel):
-    users: List[dtypes.User]
+class ResponseSlaveList(ResponseBase):
+    slaves: List[User]
 
 
-class SlaveListResponse(BaseModel):
-    slaves: List[dtypes.User]
+class ResponseSaleSlave(ResponseUser):
+    ...
 
 
-class BuySlaveResponse(dtypes.User):
-    pass
+class ResponseBuySlave(ResponseUser):
+    ...
 
 
-class SaleSlaveResponse(dtypes.User):
-    pass
+
+class ResponseBuyFetter(ResponseUser):
+    ...
 
 
-class BuyFetterResponse(dtypes.User):
-    pass
+class ResponseJobSlave(ResponseBase):
+    slave: User
 
 
-class JobSlaveResponse(BaseModel):
-    slave: dtypes.User
-
-
-class UserTopItem(BaseModel):
+class UserTopItem(ResponseBase):
     id: int
     slaves_count: int
 
 
-class TopUsersResponse(BaseModel):
+class ResponseTopUsers(ResponseBase):
     list: List[UserTopItem]

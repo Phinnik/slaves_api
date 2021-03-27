@@ -1,142 +1,150 @@
-import requests
-from typing import List
-from slaves import responses
-from slaves import exceptions
-import json
 import time
+from json.decoder import JSONDecodeError
+import typing
+
+import requests
+
+from slaves import exceptions
+from slaves import responses
 
 
 class Api:
-    def __init__(self, authorization: str):
-        self._authorization = authorization
-
-    def _call(self, method: str, api_method: str, response_type, payload=None):
-        url = 'https://pixel.w84.vkforms.ru/HappySanta/slaves/1.0.0/' + api_method
-        payload = payload or dict()
-        headers = {
-            "authorization": self._authorization,
-            'authority': 'pixel.w84.vkforms.ru',
+    def __init__(self, authorization: str) -> None:
+        self._authorization: str = authorization
+        self._headers = {
+            'Host': 'pixel.w84.vkforms.ru',
             'sec-ch-ua': '"Google Chrome";v="89", "Chromium";v="89", ";Not A Brand";v="99"',
             'accept': 'application/json, text/plain, */*',
-            'sec-ch-ua-mobile': '?0',
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36',
-            'origin': 'https://prod-app7794757-29d7bd3253fe.pages-ac.vk-apps.com',
+            'authorization': self._authorization,
+            'sec-ch-ua-mobile': '?1',
+            'save-data': 'on',
+            'user-agent': 'Mozilla/5.0 (Linux; Android 10; Redmi 8A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.105 Mobile Safari/537.36',
+            'origin': 'https://prod-app7794757-c1ffb3285f12.pages-ac.vk-apps.com',
             'sec-fetch-site': 'cross-site',
             'sec-fetch-mode': 'cors',
             'sec-fetch-dest': 'empty',
-            'referer': 'https://prod-app7794757-29d7bd3253fe.pages-ac.vk-apps.com/',
-            'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7'
+            'referer': 'https://prod-app7794757-c1ffb3285f12.pages-ac.vk-apps.com/',
+            'accept-language': 'ru,en-US;q=0.9,en;q=0.8',
         }
-        if method == 'post':
-            response = requests.post(url, headers=headers, json=payload)
+        self._url_base: str = 'https://pixel.w84.vkforms.ru/HappySanta/slaves/1.0.0/'
+    
+    def _call(
+        self,
+        response_type: typing.Type[responses.ResponseBase],
+        json: typing.Optional[typing.Dict[str, typing.Union[int, str, typing.List[int]]]] = None,
+        params: typing.Optional[typing.Dict[str, int]] = None,
+    ):
+        api_method: str = response_type.__name__
+        api_method_without_response: str = api_method.replace('Response', '')
+        api_method_without_capital_letter: str = api_method_without_response[0].lower() + api_method_without_response[1:]
+        
+        api_method_clean: str = api_method_without_capital_letter
+        if api_method_clean == 'users':
+            api_method_clean = 'user'
+        
+        url: str = self._url_base + api_method_clean
+        
+        if bool(json) == bool(params):
+            raise exceptions.UnknownMethodError()
+        elif json is not None and params is None:
+            response = requests.post(url=url, headers=self._headers, json=json)
         else:
-            response = requests.get(url, headers=headers, params=payload)
+            response = requests.get(url=url, headers=self._headers, params=params)
+        
         try:
-            response = response.json()
-        except json.decoder.JSONDecodeError as e:
+            response_json: typing.Dict[str, typing.Any] = response.json()
+        except JSONDecodeError as e:
             print(response.text)
             raise e
         except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError):
             time.sleep(2)
-            return self._call(method, api_method, response_type, payload)
-        if 'error' in response:
-            if response['error'].get('code') == 422:
-                raise exceptions.SlaveIsLocked
-        return response_type(**response)
-
-    def start(self) -> responses.StartResponse:
+            return self._call(response_type=response_type, json=json, params=params)
+        if 'error' in response_json and response_json['error'].get('code') == 422:
+            raise exceptions.SlaveIsLockedError()
+        return response_type(**response_json)
+    
+    def start(self) -> responses.ResponseStart:
         """
         Возвращает стартовую информацию
         """
-        method = 'get'
-        api_method = 'start'
-        response_type = responses.StartResponse
-        payload = None
-        return self._call(method, api_method, response_type, payload)
-
-    def user_get(self, user_id: int) -> responses.UserGetResponse:
-        method = 'get'
-        api_method = 'user'
-        response_type = responses.UserGetResponse
-        payload = {'id': user_id}
-        return self._call(method, api_method, response_type, payload)
-
-    def users_get(self, user_ids: List[int]) -> responses.UsersGetResponse:
+        return self._call(
+            response_type=responses.ResponseStart,
+        )
+    
+    def user_get(self, user_id: int) -> responses.ResponseUser:
+        return self._call(
+            response_type=responses.ResponseUser,
+            params={'id': user_id},
+        )
+    
+    def users_get(self, user_ids: typing.List[int]) -> responses.ResponseUsers:
         """
         Возвращает информацию о пользователях
 
         :param user_ids: список идентификаторов пользователей
         """
-        method = 'post'
-        api_method = 'user'
-        response_type = responses.UsersGetResponse
-        payload = {'ids': user_ids}
-        return self._call(method, api_method, response_type, payload)
-
-    def slave_list(self, user_id: int) -> responses.SlaveListResponse:
+        return self._call(
+            response_type=responses.ResponseUsers,
+            json={'ids': user_ids},
+        )
+    
+    def slave_list(self, user_id: int) -> responses.ResponseSlaveList:
         """
         Возвращает список рабов
 
         :param user_id: идентификатор пользователя
         """
-        method = 'get'
-        api_method = 'slaveList'
-        response_type = responses.SlaveListResponse
-        payload = {'id': user_id}
-        return self._call(method, api_method, response_type, payload)
-
-    def buy_slave(self, user_id) -> responses.BuySlaveResponse:
+        return self._call(
+            response_type=responses.ResponseSlaveList,
+            params={'id': user_id},
+        )
+    
+    def buy_slave(self, user_id: int) -> responses.ResponseBuySlave:
         """
         Покупает раба
 
         :param user_id: идентификатор пользователя
         """
-        method = 'post'
-        api_method = 'buySlave'
-        response_type = responses.BuySlaveResponse
-        payload = {'slave_id': user_id}
-        return self._call(method, api_method, response_type, payload)
-
-    def sale_slave(self, user_id) -> responses.SaleSlaveResponse:
+        return self._call(
+            response_type=responses.ResponseBuySlave,
+            json={'slave_id': user_id}
+        )
+    
+    def sale_slave(self, user_id) -> responses.ResponseSaleSlave:
         """
         Продает раба
 
         :param user_id: идентификатор пользователя
         """
-        method = 'post'
-        api_method = 'saleSlave'
-        response_type = responses.BuySlaveResponse
-        payload = {'slave_id': user_id}
-        return self._call(method, api_method, response_type, payload)
-
-    def buy_fetter(self, slave_id: int) -> responses.BuyFetterResponse:
+        return self._call(
+            response_type=responses.ResponseSaleSlave,
+            json={'slave_id': user_id},
+        )
+    
+    def buy_fetter(self, slave_id: int) -> responses.ResponseBuyFetter:
         """
         Покупает оковы для раба
 
         :param slave_id: идентификатор раба
         """
-        method = 'post'
-        api_method = 'buyFetter'
-        response_type = responses.BuyFetterResponse
-        payload = {'slave_id': slave_id}
-        return self._call(method, api_method, response_type, payload)
-
-    def job_slave(self, name: str, slave_id: int) -> responses.JobSlaveResponse:
+        return self._call(
+            response_type=responses.ResponseBuyFetter,
+            json={'slave_id': slave_id},
+        )
+    
+    def job_slave(self, name: str, slave_id: int) -> responses.ResponseJobSlave:
         """
         Отправляет раба на работу
 
         :param name: название работы
         :param slave_id: идентификатор раба
         """
-        method = 'post'
-        api_method = 'jobSlave'
-        response_type = responses.JobSlaveResponse
-        payload = {'name': name, 'slave_id': slave_id}
-        return self._call(method, api_method, response_type, payload)
-
-    def top_users(self) -> responses.TopUsersResponse:
-        method = 'get'
-        api_method = 'topUsers'
-        response_type = responses.TopUsersResponse
-        payload = None
-        return self._call(method, api_method, response_type, payload)
+        return self._call(
+            response_type=responses.ResponseJobSlave,
+            json={'name': name, 'slave_id': slave_id},
+        )
+    
+    def top_users(self) -> responses.ResponseTopUsers:
+        return self._call(
+            response_type=responses.ResponseTopUsers,
+        )
