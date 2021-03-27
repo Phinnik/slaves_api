@@ -37,6 +37,7 @@ class ResponseBuySlave(ResponseUser):
     ...
 
 
+
 class ResponseBuyFetter(ResponseUser):
     ...
 

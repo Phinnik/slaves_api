@@ -44,6 +44,7 @@ class Api:
             'sec-fetch-dest': 'empty',
             'referer': 'https://prod-app7794757-c1ffb3285f12.pages-ac.vk-apps.com/',
             'accept-language': 'ru,en-US;q=0.9,en;q=0.8',
+
         }
     
     def _call(
@@ -128,19 +129,8 @@ class Api:
             response_type=ResponseBuySlave,
             json={'slave_id': user_id}
         )
-    
-    def sale_slave(self, user_id) -> ResponseSaleSlave:
-        """
-        Продает раба
-        
-        :param user_id: идентификатор пользователя
-        """
-        return self._call(
-            response_type=ResponseSaleSlave,
-            json={'slave_id': user_id},
-        )
-    
-    def buy_fetter(self, slave_id: int) -> ResponseBuyFetter:
+
+    def buy_fetter(self, slave_id: int) -> responses.BuyFetterResponse:
         """
         Покупает оковы для раба
         
