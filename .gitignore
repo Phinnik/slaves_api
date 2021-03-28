@@ -143,3 +143,4 @@ cython_debug/
 /smth/study/
 /smth/
 /test.py
+/tests/test_config.json

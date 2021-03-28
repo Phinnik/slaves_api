@@ -1,3 +1,4 @@
+import pydantic
 import requests
 from typing import List
 from slaves import responses
@@ -31,6 +32,7 @@ class Api:
             response = requests.post(url, headers=headers, json=payload)
         else:
             response = requests.get(url, headers=headers, params=payload)
+
         try:
             response = response.json()
         except json.decoder.JSONDecodeError as e:
@@ -39,10 +41,16 @@ class Api:
         except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError):
             time.sleep(2)
             return self._call(method, api_method, response_type, payload)
+
         if 'error' in response:
             if response['error'].get('code') == 422:
                 raise exceptions.SlaveIsLocked
-        return response_type(**response)
+            if response['error'].get('message') == 'Invalid sign 3':
+                raise exceptions.InvalidSign
+        try:
+            return response_type(**response)
+        except pydantic.error_wrappers.ValidationError as e:
+            raise exceptions.UnknownError
 
     def start(self) -> responses.StartResponse:
         """
@@ -140,3 +148,4 @@ class Api:
         response_type = responses.TopUsersResponse
         payload = None
         return self._call(method, api_method, response_type, payload)
+
