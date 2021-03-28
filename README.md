@@ -39,3 +39,14 @@ https://phinnik.github.io/slaves_api/index.html
 
 # Благодарности
 * [@zerd05](https://github.com/zerd05)
+* [@kesha1225](https://github.com/kesha1225)
+
+# Тестирование
+1. В файле tests/test_config.json.example вставить свою строку авторизации
+1. Убрать ".example" из названия файла
+1. Запустить тест:
+
+```shell script
+cd tests
+python -m unittest -v test_api
+```
